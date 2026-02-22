@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI Sound — Lecture & Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #fff;
+      --text: #000;
+      --grey: #666;
+      --light: #e0e0e0;
+      --accent: #000;
+      --font: 'Space Grotesk', system-ui, sans-serif;
+      --mono: 'Space Mono', monospace;
+    }
+
+    html {
+      scroll-snap-type: y proximity;
+      scroll-behavior: smooth;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+    }
+
+    body {
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+
+    /* ========== OP ART PATTERNS ========== */
+
+    .riley-waves {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .riley-waves svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .riley-circles {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .riley-stripes {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        #000 0px, #000 3px,
+        #fff 3px, #fff 20px
+      );
+      opacity: 0.06;
+    }
+
+    .riley-checkerboard {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.04;
+      background-image:
+        linear-gradient(45deg, #000 25%, transparent 25%),
+        linear-gradient(-45deg, #000 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #000 75%),
+        linear-gradient(-45deg, transparent 75%, #000 75%);
+      background-size: 30px 30px;
+      background-position: 0 0, 0 15px, 15px -15px, -15px 0px;
+    }
+
+    /* Animated wave band for hero */
+    @keyframes waveShift {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-200px); }
+    }
+
+    .wave-band {
+      position: absolute;
+      width: calc(100% + 200px);
+      left: -100px;
+      animation: waveShift 8s linear infinite;
+    }
+
+    /* Pulsing concentric circles */
+    @keyframes rippleExpand {
+      0% { transform: scale(0.8); opacity: 0.08; }
+      50% { transform: scale(1); opacity: 0.04; }
+      100% { transform: scale(0.8); opacity: 0.08; }
+    }
+
+    .riley-circles svg {
+      animation: rippleExpand 6s ease-in-out infinite;
+    }
+
+    /* ========== NAV ========== */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid #000;
+      transition: opacity 0.5s;
+    }
+
+    nav a {
+      color: var(--grey);
+      text-decoration: none;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      padding: 0.3rem 0.8rem;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    nav a:hover { color: var(--text); }
+    nav a.active {
+      color: #fff;
+      background: #000;
+      border-color: #000;
+    }
+
+    /* ========== SECTIONS ========== */
+    section {
+      min-height: 100vh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 6rem 2rem 4rem;
+      text-align: center;
+      position: relative;
+    }
+
+    section.dark {
+      background: #000;
+      color: #fff;
+    }
+
+    section.dark .riley-stripes {
+      background: repeating-linear-gradient(
+        90deg,
+        #fff 0px, #fff 3px,
+        #000 3px, #000 20px
+      );
+    }
+
+    .content {
+      max-width: 900px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ========== TYPOGRAPHY ========== */
+    h1 {
+      font-size: clamp(3rem, 8vw, 7rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 .thin {
+      font-weight: 400;
+    }
+
+    h2 {
+      font-family: var(--mono);
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      font-weight: 400;
+      color: var(--grey);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    section.dark h2 {
+      color: #888;
+    }
+
+    .big-number {
+      font-size: clamp(6rem, 15vw, 12rem);
+      font-weight: 700;
+      line-height: 1;
+      letter-spacing: -0.05em;
+      opacity: 0.08;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: var(--grey);
+      max-width: 600px;
+      margin: 0 auto 1rem;
+    }
+
+    section.dark p {
+      color: #999;
+    }
+
+    .highlight {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    section.dark .highlight {
+      color: #fff;
+    }
+
+    .quote {
+      font-family: var(--mono);
+      font-size: clamp(1.2rem, 3vw, 1.8rem);
+      font-weight: 700;
+      line-height: 1.4;
+      margin: 2rem auto;
+      max-width: 700px;
+    }
+
+    /* ========== DEFINITION LIST ========== */
+    .def-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2px;
+      margin: 2.5rem 0;
+      background: #000;
+      border: 2px solid #000;
+    }
+
+    .def-item {
+      background: #fff;
+      padding: 2rem 1.5rem;
+      text-align: center;
+    }
+
+    .def-item .label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--grey);
+      margin-bottom: 0.5rem;
+    }
+
+    .def-item .value {
+      font-size: 1.3rem;
+      font-weight: 700;
+    }
+
+    /* ========== EXAMPLE STRIPS ========== */
+    .example-strip {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 2rem 0;
+      border: 2px solid #000;
+    }
+
+    .example-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #000;
+      gap: 2px;
+      cursor: pointer;
+      transition: transform 0.15s;
+    }
+
+    .example-row:hover {
+      transform: scale(1.01);
+    }
+
+    .example-row:active {
+      transform: scale(0.99);
+    }
+
+    .example-row .context {
+      background: #fff;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .example-row .meaning {
+      background: #f5f5f5;
+      padding: 1.5rem 2rem;
+      display: flex;
+      align-items: center;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--grey);
+    }
+
+    /* ========== TOOLTIP ========== */
+    .tooltip-wrap {
+      position: relative;
+      border-bottom: 2px dotted var(--grey);
+      cursor: help;
+    }
+
+    .tooltip-wrap .tooltip {
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%) scale(0.95);
+      background: #000;
+      color: #fff;
+      border: 2px solid #fff;
+      padding: 1rem 1.25rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 400;
+      line-height: 1.5;
+      width: 300px;
+      text-align: left;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+      z-index: 50;
+    }
+
+    .tooltip-wrap:hover .tooltip {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) scale(1);
+    }
+
+    h1 .tooltip-wrap .tooltip {
+      bottom: auto;
+      top: calc(100% + 10px);
+      left: 400px;
+      transform: translateX(0) scale(2);
+      width: 420px;
+      font-size: 0.9rem;
+      padding: 1.5rem 1.75rem;
+      letter-spacing: normal;
+      line-height: 1.6;
+    }
+
+    h1 .tooltip-wrap:hover .tooltip {
+      transform: translateX(0) scale(1);
+    }
+
+    /* ========== SOUND POPUP ========== */
+    .sound-popup {
+      position: fixed;
+      top: 50%;
+      left: 60%;
+      transform: translate(-50%, -50%) scale(0.9);
+      background: #000;
+      color: #fff;
+      border: 3px solid #fff;
+      padding: 2.5rem 3rem;
+      z-index: 400;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s, transform 0.25s;
+      min-width: 320px;
+      max-width: 90vw;
+    }
+
+    .sound-popup.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .sound-popup .popup-title {
+      font-family: var(--font);
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .sound-popup .popup-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: #888;
+      margin-bottom: 0.75rem;
+    }
+
+    .sound-popup .popup-wave {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 3px;
+      height: 30px;
+      margin: 1rem 0;
+    }
+
+    .sound-popup .popup-wave span {
+      width: 4px;
+      background: #fff;
+      animation: bar 0.5s ease-in-out infinite alternate;
+    }
+
+    .sound-popup .popup-wave span:nth-child(1) { height: 8px; animation-delay: 0s; }
+    .sound-popup .popup-wave span:nth-child(2) { height: 20px; animation-delay: 0.1s; }
+    .sound-popup .popup-wave span:nth-child(3) { height: 12px; animation-delay: 0.2s; }
+    .sound-popup .popup-wave span:nth-child(4) { height: 26px; animation-delay: 0.05s; }
+    .sound-popup .popup-wave span:nth-child(5) { height: 14px; animation-delay: 0.15s; }
+    .sound-popup .popup-wave span:nth-child(6) { height: 22px; animation-delay: 0.25s; }
+    .sound-popup .popup-wave span:nth-child(7) { height: 10px; animation-delay: 0.12s; }
+
+    .sound-popup .popup-hint {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 1rem;
+    }
+
+    .sound-popup-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 399;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+
+    .sound-popup-backdrop.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* ========== TWO-COL CARDS ========== */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2px;
+      margin: 2rem 0;
+      background: #000;
+      border: 2px solid #000;
+    }
+
+    section.dark .two-col {
+      background: #fff;
+      border-color: #fff;
+    }
+
+    .col-card {
+      background: #fff;
+      padding: 2.5rem 2rem;
+      text-align: left;
+    }
+
+    section.dark .col-card {
+      background: #000;
+    }
+
+    .col-card h3 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    .col-card .trait {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--grey);
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--light);
+    }
+
+    section.dark .col-card .trait {
+      border-bottom-color: #222;
+    }
+
+    .col-card .trait:last-child {
+      border-bottom: none;
+    }
+
+    /* ========== SCENARIO GRID ========== */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2px;
+      margin: 2rem 0;
+      background: #fff;
+      border: 2px solid #fff;
+    }
+
+    .scenario-card {
+      background: #000;
+      padding: 2rem 1.5rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      text-align: center;
+    }
+
+    .scenario-card:hover {
+      background: #111;
+    }
+
+    .scenario-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .scenario-card p {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: #666;
+      margin: 0;
+    }
+
+    /* ========== BUTTONS ========== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      border: 2px solid #000;
+      background: #fff;
+      color: #000;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: #000;
+      color: #fff;
+    }
+
+    .btn:active { transform: scale(0.95); }
+
+    .btn.invert {
+      background: #000;
+      color: #fff;
+      border-color: #fff;
+    }
+
+    .btn.invert:hover {
+      background: #fff;
+      color: #000;
+    }
+
+    section.dark .btn {
+      border-color: #fff;
+      background: #000;
+      color: #fff;
+    }
+
+    section.dark .btn:hover {
+      background: #fff;
+      color: #000;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+      margin: 2rem 0;
+    }
+
+    /* ========== ANTIPATTERNS ========== */
+    .anti-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin: 2rem 0;
+      border: 2px solid #fff;
+    }
+
+    .anti-row {
+      display: grid;
+      grid-template-columns: 60px 1fr auto;
+      align-items: center;
+      background: #111;
+      gap: 0;
+    }
+
+    .anti-row .num {
+      font-size: 2rem;
+      font-weight: 700;
+      text-align: center;
+      padding: 1.5rem 0;
+      color: #fff;
+    }
+
+    .anti-row .info {
+      padding: 1.5rem 1.5rem;
+      text-align: left;
+    }
+
+    .anti-row .info h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+
+    .anti-row .info p {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: #666;
+      margin: 0;
+      max-width: none;
+    }
+
+    .anti-row .actions {
+      display: flex;
+      gap: 0.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .anti-row .btn {
+      font-size: 0.7rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .btn.bad-btn {
+      border-color: #666;
+      color: #666;
+      background: transparent;
+    }
+
+    .btn.bad-btn:hover {
+      border-color: #fff;
+      color: #fff;
+      background: transparent;
+    }
+
+    .btn.good-btn {
+      border-color: #fff;
+      color: #000;
+      background: #fff;
+    }
+
+    .btn.good-btn:hover {
+      background: #ccc;
+    }
+
+    /* ========== CAPSTONE DEMO ========== */
+    .demo-area {
+      border: 2px solid #000;
+      padding: 3rem 2rem;
+      margin: 2rem 0;
+      position: relative;
+    }
+
+    .demo-area h3 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .radio-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      justify-content: center;
+      margin: 1.5rem 0;
+      border: 2px solid #000;
+      overflow: hidden;
+    }
+
+    .radio-option {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-right: 2px solid #000;
+      background: transparent;
+      color: var(--grey);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .radio-option:last-child { border-right: none; }
+    .radio-option:hover { color: var(--text); }
+    .radio-option.selected {
+      color: #fff;
+      background: #000;
+    }
+
+    .submit-btn {
+      padding: 1rem 4rem;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: var(--mono);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border: 3px solid #000;
+      background: #000;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .submit-btn:hover { background: #fff; color: #000; }
+    .submit-btn:active { transform: scale(0.95); }
+    .submit-btn.flash { animation: flashBtn 0.4s ease-out; }
+
+    @keyframes flashBtn {
+      0% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+      50% { box-shadow: 0 0 0 8px rgba(0,0,0,0.2); }
+      100% { box-shadow: 0 0 0 rgba(0,0,0,0); }
+    }
+
+    .commentary {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border: 2px solid var(--light);
+      text-align: left;
+      display: none;
+    }
+
+    .commentary.visible { display: block; }
+    .commentary h4 {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    /* ========== CHECKLIST ========== */
+    .checklist {
+      text-align: left;
+      list-style: none;
+      padding: 0;
+      margin: 2rem auto;
+      max-width: 500px;
+    }
+
+    .checklist li {
+      padding: 0.75rem 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-bottom: 2px solid var(--light);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .checklist li::before {
+      content: "?";
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 2rem;
+      height: 2rem;
+      border: 2px solid #000;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    /* ========== ASSIGNMENT ========== */
+    .assignment {
+      margin-top: 3rem;
+      padding: 2rem;
+      border: 3px solid #000;
+      text-align: left;
+    }
+
+    .assignment h3 {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.75rem;
+    }
+
+    .assignment p {
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+      max-width: none;
+    }
+
+    /* ========== QUIZ ========== */
+    .quiz-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid var(--light);
+    }
+
+    .quiz-row:last-child { border-bottom: none; }
+
+    .quiz-row .label {
+      flex: 1;
+      font-weight: 700;
+      font-size: 1rem;
+      text-align: left;
+    }
+
+    .quiz-row .choices { display: flex; gap: 0.5rem; }
+
+    .quiz-btn {
+      padding: 0.4rem 1rem;
+      border: 2px solid #000;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quiz-btn:hover { background: #000; color: #fff; }
+    .quiz-btn.correct { background: #000; color: #fff; }
+    .quiz-btn.wrong { background: transparent; color: #ccc; border-color: #ccc; text-decoration: line-through; }
+
+    /* ========== BLACKOUT OVERLAY ========== */
+    #blackout-overlay {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 300;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      cursor: pointer;
+    }
+
+    #blackout-overlay.active { display: flex; }
+    #blackout-overlay .prompt { margin-top: 2rem; font-size: 1.1rem; color: #fff; }
+    #blackout-overlay .hint { margin-top: 0.5rem; color: #555; font-size: 0.8rem; }
+
+    /* ========== AUDIO INIT ========== */
+    #audio-init {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.6rem 1.5rem;
+      background: #000;
+      border: 2px solid #fff;
+      color: #fff;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      z-index: 200;
+      cursor: pointer;
+      transition: opacity 0.5s;
+    }
+
+    #audio-init.hidden { opacity: 0; pointer-events: none; }
+
+    /* ========== PLAYING INDICATOR ========== */
+    .playing-indicator {
+      display: inline-flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 14px;
+      margin-left: 0.5rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .playing-indicator.active { opacity: 1; }
+
+    .playing-indicator span {
+      width: 3px;
+      background: currentColor;
+      animation: bar 0.6s ease-in-out infinite alternate;
+    }
+
+    .playing-indicator span:nth-child(1) { height: 4px; animation-delay: 0s; }
+    .playing-indicator span:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+    .playing-indicator span:nth-child(3) { height: 6px; animation-delay: 0.3s; }
+    .playing-indicator span:nth-child(4) { height: 12px; animation-delay: 0.1s; }
+
+    @keyframes bar {
+      from { height: 3px; }
+      to { height: 14px; }
+    }
+
+    /* ========== FADE IN ========== */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ========== SECTION DIVIDER ========== */
+    .section-divider {
+      width: 100%;
+      height: 2px;
+      background: #000;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 700px) {
+      h1 { font-size: clamp(2.5rem, 10vw, 4rem); }
+      .two-col { grid-template-columns: 1fr; }
+      .example-row { grid-template-columns: 1fr; }
+      .anti-row { grid-template-columns: 40px 1fr; }
+      .anti-row .actions { grid-column: 1 / -1; padding: 0 1rem 1rem; justify-content: center; }
+      section { padding: 5rem 1.25rem 3rem; }
+      nav { gap: 0.25rem; padding: 0.75rem 0.5rem; flex-wrap: wrap; }
+      nav a { font-size: 0.55rem; padding: 0.2rem 0.4rem; }
+      .radio-group { flex-direction: column; }
+      .radio-option { border-right: none; border-bottom: 2px solid #000; }
+      .radio-option:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#s1" class="active">Define 1</a>
+  <a href="#s2">Define 2</a>
+  <a href="#s3">Examples</a>
+  <a href="#s4">Type</a>
+  <a href="#s5">Context</a>
+  <a href="#s6">Quiz</a>
+  <a href="#s7">Mistakes</a>
+  <a href="#s8">Blackout</a>
+</nav>
+
+<!-- AUDIO INIT -->
+<div id="audio-init">Click anywhere to enable sound</div>
+
+<!-- BLACKOUT OVERLAY -->
+<div id="blackout-overlay">
+  <div id="blackout-status">Listen...</div>
+  <div class="prompt" id="blackout-prompt" style="display:none">What just happened?</div>
+  <div class="hint" id="blackout-hint" style="display:none">Click anywhere to return</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: WHAT IS UI SOUND? -->
+<!-- ============================================================ -->
+<section id="s1">
+  <!-- Riley-inspired wavy lines background -->
+  <div class="riley-waves">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern id="waves" x="0" y="0" width="1200" height="800" patternUnits="userSpaceOnUse">
+          <g fill="none" stroke="#000" stroke-width="1.5" opacity="0.07">
+            <path d="M0,50 Q150,20 300,50 T600,50 T900,50 T1200,50"/>
+            <path d="M0,100 Q150,60 300,100 T600,100 T900,100 T1200,100"/>
+            <path d="M0,150 Q150,100 300,150 T600,150 T900,150 T1200,150"/>
+            <path d="M0,200 Q150,140 300,200 T600,200 T900,200 T1200,200"/>
+            <path d="M0,250 Q150,190 300,250 T600,250 T900,250 T1200,250"/>
+            <path d="M0,300 Q150,240 300,300 T600,300 T900,300 T1200,300"/>
+            <path d="M0,350 Q150,290 300,350 T600,350 T900,350 T1200,350"/>
+            <path d="M0,400 Q150,340 300,400 T600,400 T900,400 T1200,400"/>
+            <path d="M0,450 Q150,390 300,450 T600,450 T900,450 T1200,450"/>
+            <path d="M0,500 Q150,440 300,500 T600,500 T900,500 T1200,500"/>
+            <path d="M0,550 Q150,490 300,550 T600,550 T900,550 T1200,550"/>
+            <path d="M0,600 Q150,540 300,600 T600,600 T900,600 T1200,600"/>
+            <path d="M0,650 Q150,590 300,650 T600,650 T900,650 T1200,650"/>
+            <path d="M0,700 Q150,640 300,700 T600,700 T900,700 T1200,700"/>
+            <path d="M0,750 Q150,690 300,750 T600,750 T900,750 T1200,750"/>
+          </g>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#waves)"/>
+    </svg>
+  </div>
+
+  <div class="content">
+    <h1 class="fade-in"><span class="tooltip-wrap">UI<span class="tooltip">Sounds in this demo are created two ways: (1) the Web Audio API — a built-in browser synthesizer that generates tones, noise, and effects in real time using oscillators, gain nodes, filters, and panners; and (2) pre-recorded sound clips (.wav, .mp3) loaded from a local folder.</span></span><br><span class="thin">Sound</span></h1>
+    <p class="fade-in" style="margin-top:2rem;">
+      Sound we hear when there is any type of interaction between user and interface.
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: DEFINE IT -->
+<!-- ============================================================ -->
+<section id="s2">
+  <div class="riley-stripes"></div>
+  <div class="content">
+    <h2 class="fade-in">What is it?</h2>
+    <h1 class="fade-in" style="font-size:clamp(2rem, 5vw, 3.5rem);">Sound that <span class="thin">communicates</span></h1>
+
+    <div class="def-grid fade-in">
+      <div class="def-item">
+        <div class="label">It confirms</div>
+        <div class="value">Action</div>
+      </div>
+      <div class="def-item">
+        <div class="label">It signals</div>
+        <div class="value">State</div>
+      </div>
+      <div class="def-item">
+        <div class="label">It conveys</div>
+        <div class="value">Emotion</div>
+      </div>
+      <div class="def-item">
+        <div class="label">It creates</div>
+        <div class="value">Space</div>
+      </div>
+    </div>
+
+    <p class="fade-in">
+      Not decoration. Not music. <span class="highlight">Feedback.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: WHERE YOU'VE HEARD IT -->
+<!-- ============================================================ -->
+<section id="s3" class="dark">
+  <div class="riley-checkerboard"></div>
+  <div class="content">
+    <h2 class="fade-in">You already know these</h2>
+    <h1 class="fade-in" style="font-size:clamp(2rem, 5vw, 3.5rem);">Sounds you <span class="thin">recognize</span></h1>
+
+    <div class="example-strip fade-in" style="border-color:#fff;">
+      <div class="example-row" style="background:#fff;" onclick="playRecognize('iphone')">
+        <div class="context" style="background:#000; color:#fff;">iPhone lock click <span class="playing-indicator" id="pi-iphone"><span></span><span></span><span></span><span></span></span></div>
+        <div class="meaning" style="background:#111; color:#888;">confirms your screen is secure</div>
+      </div>
+      <div class="example-row" style="background:#fff;" onclick="playRecognize('mac')">
+        <div class="context" style="background:#000; color:#fff;">Mac startup chime <span class="playing-indicator" id="pi-mac"><span></span><span></span><span></span><span></span></span></div>
+        <div class="meaning" style="background:#111; color:#888;">signals the system is alive</div>
+      </div>
+      <div class="example-row" style="background:#fff;" onclick="playRecognize('zelda')">
+        <div class="context" style="background:#000; color:#fff;">Zelda chest melody <span class="playing-indicator" id="pi-zelda2"><span></span><span></span><span></span><span></span></span></div>
+        <div class="meaning" style="background:#111; color:#888;">rewards discovery with emotion</div>
+      </div>
+      <div class="example-row" style="background:#fff;" onclick="playRecognize('windows')">
+        <div class="context" style="background:#000; color:#fff;">Windows error ding <span class="playing-indicator" id="pi-windows"><span></span><span></span><span></span><span></span></span></div>
+        <div class="meaning" style="background:#111; color:#888;">blocks an invalid action</div>
+      </div>
+      <div class="example-row" style="background:#fff;" onclick="playRecognize('slack')">
+        <div class="context" style="background:#000; color:#fff;">Slack notification <span class="playing-indicator" id="pi-slack"><span></span><span></span><span></span><span></span></span></div>
+        <div class="meaning" style="background:#111; color:#888;">pulls attention to a message</div>
+      </div>
+    </div>
+
+    <p class="fade-in">
+      Every one of these communicates <span class="highlight">without a single pixel.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: ORGANIC VS SYNTHETIC -->
+<!-- ============================================================ -->
+<section id="s4">
+  <div class="riley-waves">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="2" opacity="0.05">
+        <circle cx="600" cy="400" r="50"/>
+        <circle cx="600" cy="400" r="100"/>
+        <circle cx="600" cy="400" r="150"/>
+        <circle cx="600" cy="400" r="200"/>
+        <circle cx="600" cy="400" r="250"/>
+        <circle cx="600" cy="400" r="300"/>
+        <circle cx="600" cy="400" r="350"/>
+        <circle cx="600" cy="400" r="400"/>
+        <circle cx="600" cy="400" r="450"/>
+        <circle cx="600" cy="400" r="500"/>
+      </g>
+    </svg>
+  </div>
+  <div class="content">
+    <h2 class="fade-in">Two palettes</h2>
+    <h1 class="fade-in" style="font-size:clamp(2rem, 5vw, 3.5rem);">Organic <span class="thin">vs</span> Synthetic</h1>
+
+    <div class="two-col fade-in">
+      <div class="col-card" onclick="playInline('organic')" style="cursor:pointer;">
+        <h3>Organic <span class="playing-indicator" id="pi-organic"><span></span><span></span><span></span><span></span></span></h3>
+        <div class="trait"><span class="tooltip-wrap">Foley<span class="tooltip">The art of recording everyday sound effects in a studio — footsteps, doors closing, clothes rustling, glass breaking — performed live using real physical objects rather than synthesized digitally.</span></span> & field recordings</div>
+        <div class="trait">Textured, imperfect</div>
+        <div class="trait">Wood, paper, water</div>
+        <div class="trait">Warm & emotional</div>
+        <div class="inline-hint" style="margin-top:1rem; font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--grey); text-align:center;">Click to listen</div>
+      </div>
+      <div class="col-card" onclick="playInline('synthetic')" style="cursor:pointer;">
+        <h3>Synthetic <span class="playing-indicator" id="pi-synth"><span></span><span></span><span></span><span></span></span></h3>
+        <div class="trait">Sine waves & oscillators</div>
+        <div class="trait">Clean, precise, digital</div>
+        <div class="trait">Blips, chirps, glitches</div>
+        <div class="trait">Futuristic & systematic</div>
+        <div class="inline-hint" style="margin-top:1rem; font-family:var(--mono); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:var(--grey); text-align:center;">Click to listen</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: CONCEPT + USER = SOUND -->
+<!-- ============================================================ -->
+<section id="s5" class="dark">
+  <div class="content">
+    <h2 class="fade-in">Match sound to context</h2>
+    <h1 class="fade-in" style="font-size:clamp(2rem, 5vw, 3.5rem);">Concept + User<br><span class="thin">= Sound</span></h1>
+
+    <div class="scenario-grid fade-in">
+      <div class="scenario-card" onclick="playScenario('meditation')">
+        <h3>Meditation</h3>
+        <p>Slow, soft, reassuring</p>
+      </div>
+      <div class="scenario-card" onclick="playScenario('scifi')">
+        <h3>Sci-Fi VR</h3>
+        <p>Sharp, electric, spatial</p>
+      </div>
+      <div class="scenario-card" onclick="playScenario('healthcare')">
+        <h3>Healthcare</h3>
+        <p>Gentle, functional, calm</p>
+      </div>
+      <div class="scenario-card" onclick="playScenario('arcade')">
+        <h3>Arcade</h3>
+        <p>Fast, punchy, exciting</p>
+      </div>
+    </div>
+
+    <div class="quote fade-in" style="color:#fff;">
+      Does your sound match your world — or fight it?
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: NOW LISTEN — ICONIC SOUNDS -->
+<!-- ============================================================ -->
+<section id="s6">
+  <div class="riley-stripes"></div>
+  <div class="content">
+    <h2 class="fade-in">Now listen</h2>
+    <h1 class="fade-in" style="font-size:clamp(2rem, 5vw, 3.5rem);">Hear the <span class="thin">difference</span></h1>
+
+    <div class="btn-group fade-in">
+      <button class="btn" onclick="SoundEngine.playAppleChime()">
+        Apple Chime
+        <span class="playing-indicator" id="pi-apple"><span></span><span></span><span></span><span></span></span>
+      </button>
+      <button class="btn" onclick="SoundEngine.playZeldaChest()">
+        Zelda Chest
+        <span class="playing-indicator" id="pi-zelda"><span></span><span></span><span></span><span></span></span>
+      </button>
+    </div>
+
+    <h2 class="fade-in" style="margin-top:3rem;">Quick quiz — Organic or Synthetic?</h2>
+
+    <div class="fade-in" style="border:2px solid #000; margin-top:1rem;" id="quiz-area">
+      <div class="quiz-row">
+        <span class="label">Meditation App</span>
+        <div class="choices">
+          <button class="quiz-btn" onclick="checkQuiz(this,'organic')">Organic</button>
+          <button class="quiz-btn" onclick="checkQuiz(this,'synthetic')">Synthetic</button>
+        </div>
+      </div>
+      <div class="quiz-row">
+        <span class="label">Sci-Fi Dashboard</span>
+        <div class="choices">
+          <button class="quiz-btn" onclick="checkQuiz(this,'synthetic')">Organic</button>
+          <button class="quiz-btn" onclick="checkQuiz(this,'organic')">Synthetic</button>
+        </div>
+      </div>
+      <div class="quiz-row">
+        <span class="label">Banking App</span>
+        <div class="choices">
+          <button class="quiz-btn" onclick="checkQuiz(this,'depends')">Organic</button>
+          <button class="quiz-btn" onclick="checkQuiz(this,'depends')">Synthetic</button>
+        </div>
+      </div>
+      <div class="quiz-row">
+        <span class="label">Retro Arcade Game</span>
+        <div class="choices">
+          <button class="quiz-btn" onclick="checkQuiz(this,'synthetic')">Organic</button>
+          <button class="quiz-btn" onclick="checkQuiz(this,'organic')">Synthetic</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: BAD SOUND -->
+<!-- ============================================================ -->
+<section id="s7" class="dark">
+  <div class="content">
+    <span class="big-number">!</span>
+    <h2 class="fade-in">Learn the mistakes</h2>
+    <h1 class="fade-in" style="font-size:clamp(2rem, 5vw, 3.5rem);">What makes<br><span class="thin">bad sound?</span></h1>
+
+    <div class="anti-list fade-in">
+      <div class="anti-row">
+        <div class="num">1</div>
+        <div class="info">
+          <h3>Too Loud</h3>
+          <p>Aggressive — breaks trust immediately</p>
+        </div>
+        <div class="actions">
+          <button class="btn bad-btn" onclick="badDemo('loud')">Bad</button>
+          <button class="btn good-btn" onclick="goodDemo('loud')">Fixed</button>
+        </div>
+      </div>
+      <div class="anti-row">
+        <div class="num">2</div>
+        <div class="info">
+          <h3>Too Long</h3>
+          <p>The user moved on. The sound hasn't.</p>
+        </div>
+        <div class="actions">
+          <button class="btn bad-btn" onclick="badDemo('long')">Bad</button>
+          <button class="btn good-btn" onclick="goodDemo('long')">Fixed</button>
+        </div>
+      </div>
+      <div class="anti-row">
+        <div class="num">3</div>
+        <div class="info">
+          <h3>Repetitive</h3>
+          <p>Hover triggers 40 times. Rage ensues.</p>
+        </div>
+        <div class="actions">
+          <button class="btn bad-btn" onclick="badDemo('repeat')">Bad</button>
+          <button class="btn good-btn" onclick="goodDemo('repeat')">Fixed</button>
+        </div>
+      </div>
+      <div class="anti-row">
+        <div class="num">4</div>
+        <div class="info">
+          <h3>Wrong Emotion</h3>
+          <p>Happy chime for an error message</p>
+        </div>
+        <div class="actions">
+          <button class="btn bad-btn" onclick="badDemo('emotion')">Bad</button>
+          <button class="btn good-btn" onclick="goodDemo('emotion')">Fixed</button>
+        </div>
+      </div>
+      <div class="anti-row">
+        <div class="num">5</div>
+        <div class="info">
+          <h3>No Fallback</h3>
+          <p>Sound-only, no visual alternative</p>
+        </div>
+        <div class="actions">
+          <button class="btn bad-btn" onclick="badDemo('a11y')">Bad</button>
+          <button class="btn good-btn" onclick="goodDemo('a11y')">Fixed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 8: BLACKOUT DEMO -->
+<!-- ============================================================ -->
+<section id="s8">
+  <div class="riley-waves">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#000" stroke-width="1.5" opacity="0.06">
+        <line x1="0" y1="0" x2="1200" y2="800"/>
+        <line x1="100" y1="0" x2="1200" y2="700"/>
+        <line x1="200" y1="0" x2="1200" y2="600"/>
+        <line x1="300" y1="0" x2="1200" y2="500"/>
+        <line x1="400" y1="0" x2="1200" y2="400"/>
+        <line x1="500" y1="0" x2="1200" y2="300"/>
+        <line x1="600" y1="0" x2="1200" y2="200"/>
+        <line x1="700" y1="0" x2="1200" y2="100"/>
+        <line x1="0" y1="100" x2="1100" y2="800"/>
+        <line x1="0" y1="200" x2="1000" y2="800"/>
+        <line x1="0" y1="300" x2="900" y2="800"/>
+        <line x1="0" y1="400" x2="800" y2="800"/>
+        <line x1="0" y1="500" x2="700" y2="800"/>
+        <line x1="0" y1="600" x2="600" y2="800"/>
+        <line x1="0" y1="700" x2="500" y2="800"/>
+      </g>
+    </svg>
+  </div>
+  <div class="content">
+    <h2 class="fade-in">The real test</h2>
+    <h1 class="fade-in">Blackout</h1>
+
+    <p class="fade-in">
+      If the screen goes dark, can you still understand what's happening?
+    </p>
+
+    <div class="btn-group fade-in" style="margin-top:2rem;">
+      <button class="btn" onclick="startBlackoutDemo()" style="padding:1rem 3rem; font-size:0.9rem;">
+        Go dark
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- SECTION 9: INTENTIONAL DESIGN -->
+<!-- ============================================================ -->
+<section id="s9" class="dark">
+  <div class="content">
+    <h2 class="fade-in">Before you add sound, ask</h2>
+    <h1 class="fade-in" style="font-size:clamp(2rem, 5vw, 3.5rem);">Intentional <span class="thin">Design</span></h1>
+
+    <ul class="checklist fade-in" style="border-color:#333;">
+      <li style="border-color:#222; color:#fff;">What action needs confirmation?</li>
+      <li style="border-color:#222; color:#fff;">Should this feel human or machine?</li>
+      <li style="border-color:#222; color:#fff;">Heard once — or spatially sustained?</li>
+      <li style="border-color:#222; color:#fff;">What happens when it's muted?</li>
+      <li style="border-color:#222; color:#fff;">Would silence be stronger?</li>
+    </ul>
+
+    <div class="checklist fade-in" style="max-width:100%;">
+      <li style="list-style:none; border:none; padding:0;">
+        <div class="demo-area" style="border-color:#fff; width:100%;">
+          <h3 style="color:#fff;">One Button, Four Sounds</h3>
+          <p style="color:#888;">Select a mode, then press submit.</p>
+
+          <div class="radio-group" style="border-color:#fff;">
+            <button class="radio-option selected" onclick="selectMode(this, 'none')" style="border-color:#fff;">Silent</button>
+            <button class="radio-option" onclick="selectMode(this, 'beep')" style="border-color:#fff;">Synthetic</button>
+            <button class="radio-option" onclick="selectMode(this, 'organic')" style="border-color:#fff;">Organic</button>
+            <button class="radio-option" onclick="selectMode(this, 'spatial')" style="border-color:#fff;">Spatial</button>
+          </div>
+
+          <div style="margin: 1.5rem 0;">
+            <button class="submit-btn" onclick="capstoneSubmit(this)" style="border-color:#fff; background:#fff; color:#000;">Submit</button>
+          </div>
+
+          <div class="commentary" id="comm-none" style="border-color:#333;">
+            <h4 style="color:#fff;">Silent</h4>
+            <p style="color:#888;">Visual only. Works — but did it feel complete?</p>
+          </div>
+          <div class="commentary" id="comm-beep" style="border-color:#333;">
+            <h4 style="color:#fff;">Synthetic</h4>
+            <p style="color:#888;">Clean, immediate. Efficient but clinical.</p>
+          </div>
+          <div class="commentary" id="comm-organic" style="border-color:#333;">
+            <h4 style="color:#fff;">Organic</h4>
+            <p style="color:#888;">Warm, tactile. Human-centered apps love this.</p>
+          </div>
+          <div class="commentary" id="comm-spatial" style="border-color:#333;">
+            <h4 style="color:#fff;">Spatial</h4>
+            <p style="color:#888;">Immersive. Perfect for XR — too much for a form.</p>
+          </div>
+        </div>
+      </li>
+    </div>
+
+    <div class="assignment fade-in" style="border-color:#fff;">
+      <h3 style="color:#fff;">Assignment</h3>
+      <p style="color:#fff;">Add one intentional sound to your project. It must communicate meaning — not decoration.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================ -->
+<script>
+// ---- SOUND ENGINE ----
+const SoundEngine = {
+  ctx: null,
+  master: null,
+
+  init() {
+    if (this.ctx) return;
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.45;
+    this.master.connect(this.ctx.destination);
+    document.getElementById('audio-init').classList.add('hidden');
+  },
+
+  playTone(freq, duration, waveform = 'sine', gain = 0.3) {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    osc.type = waveform;
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(gain, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+    osc.connect(g).connect(this.master);
+    osc.start();
+    osc.stop(this.ctx.currentTime + duration + 0.05);
+  },
+
+  playBeep(freq = 880, durationMs = 120, waveform = 'sine', gain = 0.3) {
+    this.playTone(freq, durationMs / 1000, waveform, gain);
+  },
+
+  playChirp(startFreq, endFreq, durationMs, waveform = 'sine', gain = 0.25) {
+    this.init();
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    const dur = durationMs / 1000;
+    osc.type = waveform;
+    osc.frequency.setValueAtTime(startFreq, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(endFreq, this.ctx.currentTime + dur);
+    g.gain.setValueAtTime(gain, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+    osc.connect(g).connect(this.master);
+    osc.start();
+    osc.stop(this.ctx.currentTime + dur + 0.05);
+  },
+
+  playNoiseBurst(durationMs = 30, filterFreq = 3000, gain = 0.5) {
+    this.init();
+    const sr = this.ctx.sampleRate;
+    const len = sr * (durationMs / 1000);
+    const buf = this.ctx.createBuffer(1, len, sr);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+
+    const src = this.ctx.createBufferSource();
+    src.buffer = buf;
+
+    const filt = this.ctx.createBiquadFilter();
+    filt.type = 'bandpass';
+    filt.frequency.value = filterFreq;
+    filt.Q.value = 1.5;
+
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(gain, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + durationMs / 1000);
+
+    src.connect(filt).connect(g).connect(this.master);
+    src.start();
+  },
+
+  playArpeggio(notes, speed = 100, waveform = 'sine', gain = 0.2) {
+    notes.forEach((freq, i) => {
+      setTimeout(() => this.playBeep(freq, speed * 1.5, waveform, gain), i * speed);
+    });
+  },
+
+  playSpatialTone(freq = 660, durationMs = 400) {
+    this.init();
+    const dur = durationMs / 1000;
+    const osc = this.ctx.createOscillator();
+    const g = this.ctx.createGain();
+    const panner = this.ctx.createStereoPanner();
+    const delay = this.ctx.createDelay();
+    const feedback = this.ctx.createGain();
+
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    g.gain.setValueAtTime(0.25, this.ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur + 0.3);
+    panner.pan.setValueAtTime(-0.8, this.ctx.currentTime);
+    panner.pan.linearRampToValueAtTime(0.8, this.ctx.currentTime + dur);
+
+    delay.delayTime.value = 0.12;
+    feedback.gain.value = 0.3;
+
+    osc.connect(g).connect(panner).connect(this.master);
+    panner.connect(delay).connect(feedback).connect(delay);
+    delay.connect(this.master);
+
+    osc.start();
+    osc.stop(this.ctx.currentTime + dur + 0.5);
+  },
+
+  // ---- THEMED SOUNDS ----
+
+  playAppleChime() {
+    this.init();
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((f, i) => {
+      setTimeout(() => this.playTone(f, 0.8, 'sine', 0.2), i * 150);
+    });
+    flashIndicator('pi-apple', 1200);
+  },
+
+  playZeldaChest() {
+    this.init();
+    const notes = [392, 440, 494, 523, 587, 659, 740, 784];
+    notes.forEach((f, i) => {
+      setTimeout(() => this.playBeep(f, 150, 'square', 0.12), i * 100);
+    });
+    flashIndicator('pi-zelda', 900);
+  },
+
+  playOrganicClick() {
+    this.playNoiseBurst(25, 2500, 0.6);
+    this.playTone(120, 0.05, 'sine', 0.3);
+    flashIndicator('pi-organic', 500);
+  },
+
+  playSyntheticBeep() {
+    this.playBeep(880, 120, 'sine', 0.3);
+    flashIndicator('pi-synth', 500);
+  },
+
+  // Scenario palettes
+  playMeditation() {
+    this.init();
+    this.playTone(396, 1.2, 'sine', 0.15);
+    setTimeout(() => this.playTone(528, 1.0, 'sine', 0.1), 400);
+  },
+
+  playScifi() {
+    this.playChirp(200, 800, 200, 'square', 0.15);
+    setTimeout(() => this.playChirp(600, 300, 150, 'sawtooth', 0.1), 250);
+    setTimeout(() => this.playBeep(1200, 80, 'square', 0.12), 450);
+  },
+
+  playHealthcare() {
+    this.playTone(528, 0.8, 'triangle', 0.15);
+    setTimeout(() => this.playTone(440, 0.6, 'triangle', 0.1), 300);
+  },
+
+  playArcade() {
+    this.playArpeggio([523, 659, 784, 1047], 60, 'square', 0.18);
+    setTimeout(() => this.playChirp(200, 1200, 100, 'sawtooth', 0.12), 300);
+  },
+
+  // Bad sound demos
+  playLoudBad() { this.playBeep(800, 200, 'square', 0.9); },
+  playLoudGood() { this.playBeep(800, 120, 'sine', 0.2); },
+  playLongBad() { this.playTone(600, 4.0, 'sine', 0.3); },
+  playLongGood() { this.playBeep(600, 120, 'sine', 0.25); },
+  playRepeatBad() {
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => this.playBeep(700, 60, 'square', 0.25), i * 80);
+    }
+  },
+  playRepeatGood() { this.playBeep(700, 80, 'sine', 0.2); },
+  playEmotionBad() { this.playArpeggio([523, 659, 784, 1047], 100, 'sine', 0.25); },
+  playEmotionGood() { this.playArpeggio([440, 370, 330, 294], 120, 'triangle', 0.2); },
+  playA11yBad() { this.playBeep(600, 150, 'sine', 0.25); },
+  playA11yGood() {
+    this.playBeep(600, 150, 'sine', 0.25);
+    showToast('Action confirmed');
+  }
+};
+
+// ---- HELPERS ----
+
+function flashIndicator(id, duration) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.add('active');
+  setTimeout(() => el.classList.remove('active'), duration);
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('a11y-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'a11y-toast';
+    toast.style.cssText = `
+      position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%);
+      padding: 0.75rem 2rem; background: #000; color: #fff;
+      border: 2px solid #fff; font-family: 'Space Mono', monospace;
+      font-weight: 700; font-size: 0.8rem; text-transform: uppercase;
+      letter-spacing: 0.1em; z-index: 500; transition: opacity 0.3s;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.style.opacity = '1';
+  setTimeout(() => { toast.style.opacity = '0'; }, 1500);
+}
+
+function showErrorCard() {
+  let card = document.getElementById('error-flash');
+  if (!card) {
+    card = document.createElement('div');
+    card.id = 'error-flash';
+    card.style.cssText = `
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      padding: 1.5rem 2.5rem; background: #fff; color: #000;
+      border: 3px solid #000; font-family: 'Space Mono', monospace;
+      font-weight: 700; font-size: 0.9rem; text-transform: uppercase;
+      z-index: 500; transition: opacity 0.3s;
+    `;
+    document.body.appendChild(card);
+  }
+  card.textContent = 'Error: Action Failed';
+  card.style.opacity = '1';
+  setTimeout(() => { card.style.opacity = '0'; }, 2000);
+}
+
+// ---- INLINE PLAY (PALETTE SECTION) ----
+
+function playInline(type) {
+  SoundEngine.init();
+  if (type === 'organic') {
+    playRainDrops();
+    showRainVisual();
+    flashIndicator('pi-organic', 3000);
+  } else if (type === 'synthetic') {
+    SoundEngine.playSyntheticBeep();
+    flashIndicator('pi-synth', 600);
+  }
+}
+
+// ---- RAIN SOUND + VISUAL ----
+
+function playRainDrops() {
+  // Each drop delays: 0, 400, 900ms; fall duration: 450ms
+  // So splashes land at 450, 850, 1350ms
+  const splashTimes = [450, 850, 1350];
+  splashTimes.forEach((t) => {
+    setTimeout(() => {
+      const a = new Audio('Sound Files/Liquid.wav');
+      a.play();
+    }, t);
+  });
+}
+
+function showRainVisual() {
+  const card = document.querySelector('#s4 .col-card');
+  if (!card) return;
+
+  // Create container positioned relative to the organic card
+  let container = document.getElementById('rain-container');
+  if (container) container.remove();
+
+  container = document.createElement('div');
+  container.id = 'rain-container';
+  container.style.cssText = `
+    position: absolute; left: -10px; top: -20px;
+    width: 80px; height: calc(100% + 20px);
+    pointer-events: none; z-index: 10; overflow: visible;
+  `;
+  card.style.position = 'relative';
+  card.appendChild(container);
+
+  // Add keyframes if not already added
+  if (!document.getElementById('rain-keyframes')) {
+    const style = document.createElement('style');
+    style.id = 'rain-keyframes';
+    style.textContent = `
+      @keyframes dropFall {
+        0% { transform: translateY(0); opacity: 0; }
+        5% { opacity: 0.6; }
+        85% { opacity: 0.5; transform: translateY(calc(var(--fall-dist) - 4px)); }
+        90% { opacity: 0; transform: translateY(var(--fall-dist)); }
+        100% { opacity: 0; transform: translateY(var(--fall-dist)); }
+      }
+      @keyframes splashLeft {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+        100% { transform: translate(-8px, -6px) scale(0.3); opacity: 0; }
+      }
+      @keyframes splashRight {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.7; }
+        100% { transform: translate(8px, -6px) scale(0.3); opacity: 0; }
+      }
+      @keyframes splashCenter {
+        0% { transform: translate(0, 0) scale(1); opacity: 0.5; }
+        100% { transform: translate(0, -10px) scale(0.2); opacity: 0; }
+      }
+      @keyframes ripple {
+        0% { transform: scaleX(1); opacity: 0.5; }
+        100% { transform: scaleX(2.5); opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  const drops = [
+    { x: 15, delay: 0 },
+    { x: 42, delay: 400 },
+    { x: 28, delay: 900 }
+  ];
+
+  const cardHeight = card.offsetHeight || 200;
+  const fallDist = cardHeight + 10;
+
+  drops.forEach((cfg) => {
+    setTimeout(() => {
+      // The drop
+      const drop = document.createElement('div');
+      drop.style.cssText = `
+        position: absolute; left: ${cfg.x}px; top: 0;
+        width: 2px; height: 14px; background: #000; border-radius: 1px;
+        --fall-dist: ${fallDist}px;
+        animation: dropFall 0.5s ease-in forwards;
+      `;
+      container.appendChild(drop);
+
+      // Splash + ripple at bottom after drop lands
+      setTimeout(() => {
+        drop.remove();
+        const splashY = fallDist;
+
+        // Splash particles
+        [-1, 0, 1].forEach((dir) => {
+          const particle = document.createElement('div');
+          const anim = dir === -1 ? 'splashLeft' : dir === 1 ? 'splashRight' : 'splashCenter';
+          particle.style.cssText = `
+            position: absolute; left: ${cfg.x - 1}px; top: ${splashY}px;
+            width: 3px; height: 3px; background: #000; border-radius: 50%;
+            animation: ${anim} 0.35s ease-out forwards;
+          `;
+          container.appendChild(particle);
+          setTimeout(() => particle.remove(), 350);
+        });
+
+        // Ripple ellipse
+        const ripple = document.createElement('div');
+        ripple.style.cssText = `
+          position: absolute; left: ${cfg.x - 6}px; top: ${splashY + 1}px;
+          width: 12px; height: 3px; border: 1px solid #000; border-radius: 50%;
+          animation: ripple 0.4s ease-out forwards;
+        `;
+        container.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 400);
+
+      }, 450);
+    }, cfg.delay);
+  });
+
+  // Clean up container after all animations
+  setTimeout(() => {
+    if (container) container.remove();
+  }, 2500);
+}
+
+// ---- INLINE PLAY (RECOGNIZE SECTION) ----
+
+function playRecognize(type) {
+  SoundEngine.init();
+  const sounds = {
+    iphone: () => {
+      SoundEngine.playNoiseBurst(10, 7000, 0.6);
+      SoundEngine.playTone(1800, 0.02, 'sine', 0.2);
+      flashIndicator('pi-iphone', 500);
+    },
+    mac: () => {
+      SoundEngine.playAppleChime();
+      flashIndicator('pi-mac', 1200);
+    },
+    zelda: () => {
+      SoundEngine.playZeldaChest();
+      flashIndicator('pi-zelda2', 900);
+    },
+    windows: () => {
+      SoundEngine.playBeep(600, 180, 'triangle', 0.3);
+      setTimeout(() => SoundEngine.playBeep(400, 250, 'triangle', 0.25), 180);
+      flashIndicator('pi-windows', 600);
+    },
+    slack: () => {
+      SoundEngine.playBeep(800, 80, 'sine', 0.2);
+      setTimeout(() => SoundEngine.playBeep(1000, 100, 'sine', 0.25), 120);
+      setTimeout(() => SoundEngine.playBeep(1200, 80, 'sine', 0.15), 260);
+      flashIndicator('pi-slack', 500);
+    }
+  };
+  if (sounds[type]) sounds[type]();
+}
+
+// ---- BLACKOUT DEMO ----
+
+function startBlackoutDemo() {
+  SoundEngine.init();
+  const overlay = document.getElementById('blackout-overlay');
+  const status = document.getElementById('blackout-status');
+  const prompt = document.getElementById('blackout-prompt');
+  const hint = document.getElementById('blackout-hint');
+
+  overlay.classList.add('active');
+  status.textContent = 'Listen...';
+  prompt.style.display = 'none';
+  hint.style.display = 'none';
+
+  setTimeout(() => {
+    status.textContent = '\u{1F514}';
+    SoundEngine.playBeep(880, 150, 'sine', 0.25);
+    setTimeout(() => SoundEngine.playBeep(880, 150, 'sine', 0.2), 200);
+  }, 1000);
+
+  setTimeout(() => {
+    status.textContent = '\u2713';
+    SoundEngine.playArpeggio([523, 659, 784], 100, 'sine', 0.2);
+  }, 2500);
+
+  setTimeout(() => {
+    status.textContent = '\u2717';
+    SoundEngine.playArpeggio([440, 370, 330], 120, 'triangle', 0.25);
+  }, 4000);
+
+  setTimeout(() => {
+    status.textContent = '';
+    prompt.style.display = 'block';
+    hint.style.display = 'block';
+  }, 5500);
+
+  overlay.onclick = () => {
+    overlay.classList.remove('active');
+    overlay.onclick = null;
+  };
+}
+
+// ---- QUIZ ----
+
+function checkQuiz(btn, correctType) {
+  const row = btn.closest('.quiz-row');
+  const buttons = row.querySelectorAll('.quiz-btn');
+  const btnText = btn.textContent.toLowerCase();
+
+  if (correctType === 'depends') {
+    btn.classList.add('correct');
+    btn.textContent += ' \u2713';
+    buttons.forEach(b => b.disabled = true);
+    return;
+  }
+
+  if (btnText === correctType) {
+    btn.classList.add('correct');
+    btn.textContent += ' \u2713';
+    SoundEngine.playBeep(880, 100, 'sine', 0.15);
+  } else {
+    btn.classList.add('wrong');
+    btn.textContent += ' \u2717';
+    SoundEngine.playBeep(220, 200, 'triangle', 0.15);
+    buttons.forEach(b => {
+      if (b.textContent.toLowerCase().includes(correctType)) {
+        b.classList.add('correct');
+      }
+    });
+  }
+  buttons.forEach(b => b.disabled = true);
+}
+
+// ---- SCENARIOS ----
+
+function playScenario(type) {
+  SoundEngine.init();
+  const map = {
+    meditation: () => SoundEngine.playMeditation(),
+    scifi: () => SoundEngine.playScifi(),
+    healthcare: () => SoundEngine.playHealthcare(),
+    arcade: () => SoundEngine.playArcade()
+  };
+  if (map[type]) map[type]();
+}
+
+// ---- BAD / GOOD DEMOS ----
+
+function badDemo(type) {
+  SoundEngine.init();
+  if (type === 'emotion') showErrorCard();
+  const map = {
+    loud: () => SoundEngine.playLoudBad(),
+    long: () => SoundEngine.playLongBad(),
+    repeat: () => SoundEngine.playRepeatBad(),
+    emotion: () => SoundEngine.playEmotionBad(),
+    a11y: () => SoundEngine.playA11yBad()
+  };
+  if (map[type]) map[type]();
+}
+
+function goodDemo(type) {
+  SoundEngine.init();
+  if (type === 'emotion') showErrorCard();
+  const map = {
+    loud: () => SoundEngine.playLoudGood(),
+    long: () => SoundEngine.playLongGood(),
+    repeat: () => SoundEngine.playRepeatGood(),
+    emotion: () => SoundEngine.playEmotionGood(),
+    a11y: () => SoundEngine.playA11yGood()
+  };
+  if (map[type]) map[type]();
+}
+
+// ---- CAPSTONE DEMO ----
+
+let currentMode = 'none';
+
+function selectMode(btn, mode) {
+  document.querySelectorAll('.radio-option').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  currentMode = mode;
+  document.querySelectorAll('.commentary').forEach(c => c.classList.remove('visible'));
+}
+
+function capstoneSubmit(btn) {
+  SoundEngine.init();
+  btn.classList.remove('flash');
+  void btn.offsetWidth;
+  btn.classList.add('flash');
+
+  switch (currentMode) {
+    case 'none': break;
+    case 'beep': SoundEngine.playSyntheticBeep(); break;
+    case 'organic': SoundEngine.playOrganicClick(); break;
+    case 'spatial': SoundEngine.playSpatialTone(); break;
+  }
+
+  document.querySelectorAll('.commentary').forEach(c => c.classList.remove('visible'));
+  const comm = document.getElementById('comm-' + currentMode);
+  if (comm) setTimeout(() => comm.classList.add('visible'), 300);
+}
+
+// ---- NAV HIGHLIGHTING ----
+
+const sections = document.querySelectorAll('section');
+const navLinks = document.querySelectorAll('nav a');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.4 });
+
+sections.forEach(s => observer.observe(s));
+
+// ---- FADE IN ANIMATIONS ----
+
+const fadeObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.fade-in').forEach(el => fadeObserver.observe(el));
+
+// ---- INIT AUDIO ON FIRST CLICK ----
+
+document.addEventListener('click', () => SoundEngine.init(), { once: true });
+</script>
+
+</body>
+</html>
